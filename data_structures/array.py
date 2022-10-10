@@ -39,7 +39,7 @@ class Array(Generic[T]):
   def __getitem__(self, index: int):
     """Returns value at array index with array[index].
 
-    Time Complexiity: O(1)
+    Time Complexity: O(1)
     """
     return self._values[index]
 
@@ -79,7 +79,7 @@ class Array(Generic[T]):
     
     If no index is provided, inserts at the end of array.
     
-    Time complexity: O(n)
+    Time Complexity: O(n)
 
       Best Case - O(1) when inserting at the end of array.
       Worst Case - O(n) when inserting at the start of array.
@@ -101,7 +101,7 @@ class Array(Generic[T]):
 
     If no index is provided, remove the value at the end of array.
     
-    Time complexity: O(n)
+    Time Complexity: O(n)
 
       Best Case - O(1) when removing from the end of array.
       Worst Case - O(n) when removing from the start of array.
@@ -123,7 +123,7 @@ class Array(Generic[T]):
   def index_of(self, search_value: T):
     """Searches array for a value and returns the first index where it occurs.
     
-    Time complexity: O(n)
+    Time Complexity: O(n)
 
       Best Case - O(1) when the value is at the start of array.
       Worst Case - O(n) when inserting at the end of the array.
