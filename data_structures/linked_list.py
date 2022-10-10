@@ -63,7 +63,10 @@ class LinkedList(Generic[T]):
     return self._size
 
   def add_head(self, value: T):
-    """Adds a value to the beginning of the linked list."""
+    """Adds a value to the beginning of the linked list.
+        
+    Time Complexity: O(1)
+    """
     node = Node(value)
     self._size += 1
 
@@ -74,7 +77,10 @@ class LinkedList(Generic[T]):
     self._head, self._head.next = node, self._head
 
   def add_tail(self, value: T):
-    """Adds a value to the end of the linked list."""
+    """Adds a value to the end of the linked list.
+        
+    Time Complexity: O(1)
+    """
     node = Node(value)
     self._size += 1
 
