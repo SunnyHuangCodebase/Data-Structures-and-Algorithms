@@ -51,11 +51,17 @@ class LinkedList(Generic[T]):
     return nodes
 
   @property
-  def head(self):
+  def head(self) -> Node[T]:
+    if self._head is None:
+      raise IndexError
+
     return self._head
 
   @property
-  def tail(self):
+  def tail(self) -> Node[T]:
+    if self._tail is None:
+      raise IndexError
+
     return self._tail
 
   def size(self) -> int:

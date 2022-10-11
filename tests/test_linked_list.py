@@ -90,35 +90,58 @@ class TestArray:
 
   def test_empty_linked_list_add_head(self):
     linked_list: LinkedList[int] = LinkedList()
-    assert linked_list.head == linked_list.tail
+    with pytest.raises(IndexError):
+      assert linked_list.head
+    with pytest.raises(IndexError):
+      assert linked_list.tail
     linked_list.add_head(0)
     assert linked_list.head == linked_list.tail
 
   def test_empty_linked_list_add_tail(self):
     linked_list: LinkedList[int] = LinkedList()
-    assert linked_list.head == linked_list.tail
+    with pytest.raises(IndexError):
+      assert linked_list.head
+    with pytest.raises(IndexError):
+      assert linked_list.tail
     linked_list.add_tail(5)
     assert linked_list.head == linked_list.tail
 
   def test_linked_list_delete_empty(self):
     linked_list: LinkedList[int] = LinkedList()
-    assert linked_list.head == linked_list.tail
+    with pytest.raises(IndexError):
+      assert linked_list.head
+    with pytest.raises(IndexError):
+      assert linked_list.tail
+
     linked_list.delete_head()
-    assert linked_list.head == linked_list.tail
+    with pytest.raises(IndexError):
+      assert linked_list.head
+    with pytest.raises(IndexError):
+      assert linked_list.tail
     linked_list.delete_tail()
-    assert linked_list.head == linked_list.tail
+    with pytest.raises(IndexError):
+      assert linked_list.head
+    with pytest.raises(IndexError):
+      assert linked_list.tail
 
   def test_linked_list_delete_single_node_head(self):
     linked_list: LinkedList[int] = LinkedList(Node(1))
     assert linked_list.head == linked_list.tail
     linked_list.delete_head()
-    assert linked_list.head == linked_list.tail == None
+    with pytest.raises(IndexError):
+      assert linked_list.head
+    with pytest.raises(IndexError):
+      assert linked_list.tail
 
   def test_linked_list_delete_single_node_tail(self):
     linked_list: LinkedList[int] = LinkedList(Node(1))
     assert linked_list.head == linked_list.tail
     linked_list.delete_tail()
-    assert linked_list.head == linked_list.tail == None
+
+    with pytest.raises(IndexError):
+      assert linked_list.head
+    with pytest.raises(IndexError):
+      assert linked_list.tail
 
 
 if __name__ == "__main__":

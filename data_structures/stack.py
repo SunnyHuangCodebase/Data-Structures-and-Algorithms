@@ -85,3 +85,11 @@ class Stack(Generic[T]):
     """
 
     return not self._index
+
+  @property
+  def is_full(self) -> bool:
+    """Returns whether the stack has reached max capacity.
+    
+    Time Complexity: O(1)
+    """
+    return self._index == self._size
