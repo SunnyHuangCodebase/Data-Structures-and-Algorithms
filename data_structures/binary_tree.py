@@ -23,13 +23,13 @@ class Node(ABC, Generic[N]):
   def __repr__(self):
     strings: list[str] = []
     if self.value:
-      strings.append(f"Node(value = {self.value}")
+      strings.append(f"{self.__class__.__name__}(value = {self.value}")
 
     if self.left:
-      strings.append(f", left = {self.left}")
+      strings.append(f", left = {self.left!r}")
 
     if self.right:
-      strings.append(f", right = {self.right}")
+      strings.append(f", right = {self.right!r}")
 
     if strings:
       strings.append(")")
@@ -66,6 +66,9 @@ class TreeNode(Node["TreeNode"]):
   _left: TreeNode | None = None
   _right: TreeNode | None = None
 
+  def __repr__(self):
+    return super().__repr__()
+
 
 @dataclass
 class AVLNode(Node["AVLNode"]):
@@ -73,6 +76,9 @@ class AVLNode(Node["AVLNode"]):
   _left: AVLNode | None = None
   _right: AVLNode | None = None
   height: int = 0
+
+  def __repr__(self):
+    return super().__repr__()
 
 
 @dataclass
@@ -211,12 +217,9 @@ class BinarySearchTree(BinaryTree[TreeNode]):
 
   root: TreeNode | None = field(default=None)
 
-  def __repr__(self):
-    return f"{self.root}"
-
-  def __eq__(self, other: BinarySearchTree) -> bool:    #type: ignore
+  def __eq__(self, other: AVLTree) -> bool:    #type: ignore
     """Returns whether two trees are equal."""
-    return super()._equal(self.root, other.root)
+    return super().__eq__(other)    #type: ignore
 
   def is_valid(self) -> bool:
     """Iterates the tree to confirm it is a binary search tree, starting from the root."""
@@ -293,7 +296,7 @@ class AVLTree(BinaryTree[AVLNode]):
 
   def __eq__(self, other: AVLTree) -> bool:    #type: ignore
     """Returns whether two trees are equal."""
-    return self._equal(self.root, other.root)
+    return super().__eq__(other)    #type: ignore
 
   def find(self, value: int) -> bool:
     """Searches the tree for the correct value."""
