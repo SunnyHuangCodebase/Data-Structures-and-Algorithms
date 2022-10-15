@@ -386,21 +386,3 @@ class AVLTree(BinaryTree[AVLNode]):
   def set_height(self, node: AVLNode):
     """Sets the height of the current node."""
     node.height = 1 + max(self.height_of(node.right), self.height_of(node.left))
-
-
-# if __name__ == "__main__":
-#   avl_tree = AVLTree()
-#   avl_tree.insert(16)
-#   avl_tree.in_order_dfs()
-#   avl_tree.insert(8)
-#   avl_tree.in_order_dfs()
-#   avl_tree.insert(20)
-#   avl_tree.in_order_dfs()
-#   avl_tree.insert(4)
-#   avl_tree.in_order_dfs()
-#   avl_tree.insert(12)
-#   avl_tree.in_order_dfs()
-#   avl_tree.insert(10)
-#   avl_tree.in_order_dfs()
-#   avl_tree.insert(18)
-#   avl_tree.in_order_dfs()

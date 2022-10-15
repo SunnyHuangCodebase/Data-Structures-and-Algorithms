@@ -42,6 +42,10 @@ class TestBinaryTree:
     bst.insert(18)
     return bst
 
+  @pytest.fixture
+  def new_tree(self) -> BinarySearchTree:
+    return BinarySearchTree()
+
   def format_print(self, bst_values: list[int]):
     strings: list[str] = []
     for value in bst_values:
@@ -90,6 +94,28 @@ class TestBinaryTree:
     assert bst.is_valid()
     bst.root.value = 100
     assert bst.is_valid() == False
+
+  def test_bst_min_value(self, new_tree: BinarySearchTree):
+    with pytest.raises(Exception):
+      new_tree.min_value()
+    for i in range(16, -1, -1):
+      new_tree.insert(i)
+      assert new_tree.min_value() == i
+
+  def test_bst_find_value(self, new_tree: BinarySearchTree):
+    for i in range(16):
+      assert new_tree.find(i) == False
+      new_tree.insert(i)
+      assert new_tree.find(i)
+
+  def test_bst_string_and_repr(self, new_tree: BinarySearchTree):
+    new_tree.insert(2)
+    new_tree.insert(1)
+    new_tree.insert(3)
+    new_tree.insert(4)
+
+    assert f"{new_tree.root}" == "2"
+    assert f"{new_tree.root!r}" == "TreeNode(value = 2, left = TreeNode(value = 1), right = TreeNode(value = 3, right = TreeNode(value = 4)))"
 
 
 if __name__ == "__main__":
