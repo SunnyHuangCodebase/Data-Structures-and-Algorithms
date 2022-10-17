@@ -23,7 +23,7 @@ class MaxHeap:
   """MaxHeap implements a heap using a list representation.
 
   All nodes of a max heap must be greater than either of its children's values, if any.
-  
+
   Inferior Alternatives:
     A tree costs more memory with no performance gains.
   """
@@ -31,16 +31,22 @@ class MaxHeap:
 
   def insert(self, value: int):
     """Adds a number to the heap.
-    
+
     Time Complexity: O(log(n))
     """
     self.data.append(value)
     index = len(self.data) - 1
     self.bubble_up(index)
 
+  def peek(self):
+    """Returns the top number from the heap."""
+    if not self.data:
+      raise IndexError
+    return self.data[0]
+
   def remove(self):
     """Removes and returns the top number from the heap.
-    
+
     Time Complexity: O(log(n))
     """
     if not self.data:
@@ -165,3 +171,60 @@ class MaxHeap:
     for number in unordered_list:
       self.insert(number)
     return self
+
+  @staticmethod
+  def bubble_up_heapify(array: list[int]):
+    """Heapifies a list with the bubble up method."""
+    for index in range(len(array)):
+      MaxHeap._bubble_up_heapify(array, index)
+    return array
+
+  @staticmethod
+  def bubble_down_heapify(array: list[int]):
+    """Heapifies a list with the bubble down method."""
+    for index in range(len(array) // 2 - 1, -1, -1):
+      MaxHeap._bubble_down_heapify(array, index)
+    return array
+
+  @staticmethod
+  def _bubble_up_heapify(array: list[int], index: int):
+    """Recursive bubble up heapify method."""
+    parent = (index - 1) // 2
+
+    while index and array[index] > array[parent]:
+
+      array[index], array[parent] = array[parent], array[index]
+      MaxHeap._bubble_up_heapify(array, parent)
+
+  @staticmethod
+  def _bubble_down_heapify(array: list[int], index: int):
+    """Recursive bubble down heapify method."""
+    larger_index = index
+
+    left_index = 2 * index + 1
+    if left_index < len(array) and array[left_index] > array[larger_index]:
+      larger_index = left_index
+
+    right_index = 2 * index + 2
+    if right_index < len(array) and array[right_index] > array[larger_index]:
+      larger_index = right_index
+
+    if index != larger_index:
+      array[index], array[larger_index] = array[larger_index], array[index]
+      MaxHeap._bubble_down_heapify(array, larger_index)
+
+    index = larger_index
+
+  @staticmethod
+  def kth_largest_item(array: list[int], k: int):
+    """Return the kth largest item in an array by creating a heapified list."""
+    if k not in range(1, len(array) + 1):
+      raise IndexError
+    heap = MaxHeap()
+    for number in array:
+      heap.insert(number)
+
+    for _ in range(k - 1):
+      heap.remove()
+
+    return heap.peek()
