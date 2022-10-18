@@ -1,11 +1,18 @@
-"""A trie is a tree containing nodes representing units of a larger sequence.
-  Iterating through a trie in DFS order returns a subsequence (prefix) of a larger sequence.
-  For tries of words, each node may have up to 26 children (one for each letter of the alphabet).
-
-  This Trie implementation is for instructional purposes and for words.
+"""A trie is a retrieval tree containing nodes that represent units of larger sequences.
+  DFS traversal of a trie produces a stack of nodes whose values make up a larger sequence.
+  Upon reaching a terminal node, the current stack yields a full sequence.
+  
+  Example of word autocomplete implemented with a trie:
+    The trie contains nodes with a letter value and up to 26 children (one for each letter).
+    A node representing the last letter of a word is marked as a terminal node.
+    Traversing past a terminal node with children will yield larger words.
+    A single sequence can contain multiple words with a common prefix.
+    BATCHES can terminate at nodes T, H, or S, yielding BAT, BATCH, or BATCHES, respectively.
 
   Tries also go by the names: digital trees or prefix trees.
   A radix tree is a compressed trie where nodes with a single child node are merged into one.
+
+  This Trie implementation is for instructional purposes.
 """
 
 from __future__ import annotations
@@ -16,17 +23,13 @@ T = TypeVar("T", "ArrayTrieNode", "DictTrieNode")
 
 
 class TrieNode(ABC, Generic[T]):
-  """A Trie Node is a unit of a Trie, a larger data structure represented by a sequence of nodes.
-  
-  Words are a common usage of tries.
-  Each node has a letter value and up to 26 children (one for each letter of the alphabet).
-  DFS traversal through a trie yields a sequence of letters, which can form words.
-  If the Trie's is_end_of_word property is True, terminating the sequence yields a valid word.
-  
-  If the TrieNode has children, it does not have to be terminated even if it is the end of the word.
-  For example, the following Trie:
-    T -> R -> E -> E (end_word = True) -> S (end_word = True)
-    can yield either TREE or TREES
+  """An abstract base class of a Trie's basic unit.
+
+  Attributes:
+    value: A string letter.
+    children: A list/dictionary of next-in-sequence TrieNodes mapped to an index or letter.
+    _is_end_of_word: A boolean indicating if the sequence is valid when terminated at this node.
+
   """
   value: str
   children: list[T | None] | dict[str, T]
@@ -72,7 +75,7 @@ class TrieNode(ABC, Generic[T]):
 
 
 class DictTrieNode(TrieNode["DictTrieNode"]):
-  """A Trie node that uses a dictionary to represent its children."""
+  """A Trie node implementation with children nodes mapped to their letter in a dictionary."""
   value: str
   children: dict[str, DictTrieNode]
   _is_end_of_word: bool
@@ -99,7 +102,7 @@ class DictTrieNode(TrieNode["DictTrieNode"]):
     del self.children[character]
 
   def _create_child(self, character: str) -> DictTrieNode:
-    """Creates and returns a child node."""
+    """Validates and creates a child node, then returns it."""
     self._validate_letter(character)
     child = DictTrieNode(character)
     self.children[character] = child
@@ -107,7 +110,7 @@ class DictTrieNode(TrieNode["DictTrieNode"]):
 
 
 class ArrayTrieNode(TrieNode["ArrayTrieNode"]):
-  """A Trie node that uses an array to represent its children."""
+  """A Trie node implementation with indexed nodes in an array."""
   CHARSET_SIZE = 26
   value: str
   children: list[ArrayTrieNode | None]
@@ -133,24 +136,23 @@ class ArrayTrieNode(TrieNode["ArrayTrieNode"]):
     self.children[index] = None
 
   def _create_child(self, index: int, character: str) -> ArrayTrieNode:
-    """Creates and returns a child node."""
+    """Creates a child node, then returns it."""
     child = ArrayTrieNode(character)
     self.children[index] = child
     return child
 
   def _letter_index(self, character: str):
-    """Returns an integer index of a letter based on its Unicode number."""
+    """Returns an integer index of a letter based on its Unicode number, if it is valid."""
     self._validate_letter(character)
     index = ord(character) - ord("a")
     return index
 
 
 class Trie(Generic[T]):
-  """Trie is a word retrieval tree containing TrieNodes representing alphabet characters.
-  Each node may contain up to 26 children (one for each letter).
-  DFS traversal of the trie will produce a prefix of a word.
-
-  A node represents a letter and can have up to 26 children (for each letter).
+  """A Trie implementation for word retrieval and autocomplete.
+  
+  *Lookup, insert, and delete operations all take O(n) time, where n is the word length.
+  Since words are short, the time complexity can be rounded down to O(1) (constant time).
   """
 
   root: T
@@ -159,9 +161,9 @@ class Trie(Generic[T]):
     self.root = root
 
   def lookup(self, word: str):
-    """
-    Time Complexity: O(n) -> O(1), where n is the length of a word.
-    Because words have a finite length and are , the time complexity can be rounded to O(1).
+    """Returns whether a valid word was found after iterating through the trie.
+
+    Time Complexity: O(n) / O(1)*
     """
     node: T | None = self.root
     for character in word.lower():
@@ -173,9 +175,9 @@ class Trie(Generic[T]):
     return node.is_end_of_word    # type: ignore
 
   def insert(self, word: str):
-    """
-    Time Complexity: O(n)/O(1), where n is the length of a word.
-    Because words have a finite length, the time complexity can be rounded to O(1).
+    """Inserts a word into the trie, creating additional nodes if necessary.
+    
+    Time Complexity: O(n) / O(1)*
     """
     node = self.root
 
@@ -184,17 +186,18 @@ class Trie(Generic[T]):
 
     node.is_end_of_word = True
 
-  def delete_word(self, word: str):
-    """
-    Time Complexity: O(n)/O(1), where n is the length of a word.
-    Because words have a finite length, the time complexity can be rounded to O(1).
+  def delete(self, word: str):
+    """Removes a word from the trie, deleting nodes and unmarking terminal nodes if necessary.
+
+    Time Complexity: O(n) / O(1)*
     """
     if not word:
       return
 
-    self._delete_word(self.root, word.lower(), 0)
+    self._delete(self.root, word.lower(), 0)
 
-  def _delete_word(self, node: T, word: str, index: int):
+  def _delete(self, node: T, word: str, index: int):
+    """Recursive helper method that deletes letters from the trie and unmarks terminal nodes."""
     if index == len(word):
       node.is_end_of_word = False
       return
@@ -205,15 +208,16 @@ class Trie(Generic[T]):
     if not child:
       return
 
-    self._delete_word(child, word, index + 1)
+    self._delete(child, word, index + 1)
     if not child.has_children() and not child.is_end_of_word:
       node.delete_child(character)
 
-  def auto_complete(self, word: str) -> list[str]:
-    letters: list[str] = list(word)
+  def auto_complete(self, prefix: str) -> list[str]:
+    """Returns all possible words that begin with a prefix string."""
+    letters: list[str] = list(prefix)
     matches: list[str] = []
 
-    node = self.get_last_node(word)
+    node = self._get_last_node(prefix)
 
     if not node:
       return matches
@@ -221,10 +225,11 @@ class Trie(Generic[T]):
     self._auto_complete(node, letters, matches)
     return matches
 
-  def get_last_node(self, word: str) -> T | None:
+  def _get_last_node(self, prefix: str) -> T | None:
+    """A helper method that returns the last node of a prefix string."""
     node: T | None = self.root
 
-    for letter in word:
+    for letter in prefix:
 
       if not node:
         return None
@@ -234,7 +239,7 @@ class Trie(Generic[T]):
     return node
 
   def _auto_complete(self, node: T, letters: list[str], matches: list[str]):
-    """"""
+    """A recursive helper method to generate all possible words for autocompletion."""
 
     if node.is_end_of_word:
       matches.append("".join(letters))
