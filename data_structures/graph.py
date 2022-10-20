@@ -1,8 +1,8 @@
-"""A graph is a network of nodes (or vertices) and their connections (edges).
-  Each node (vertex) can connect to any other node(s).
+"""A graph is a network of nodes (vertices) and their connections (edges).
+  A node (vertex) represents an object and may connect to any other node(s).
   
-  An undirected graph maintains connections between two nodes.
-  A directed graph may connect Node A to Node B, but not necessarily B to A.
+  Edges in an undirected graph represent a connections between two nodes (A and B).
+  Edges in a directed graph may connect A to B, but not necessarily B to A.
   Edges may also carry a weight to quantify the connection.
   
   Example of a social network implemented with a graph:
@@ -14,6 +14,7 @@
   This Graph implementation is for instructional purposes.
 """
 from __future__ import annotations
+from collections import deque
 from typing import Any
 
 
@@ -116,6 +117,179 @@ class Graph:
 
     edges.remove(to_node)
 
+  def dfs(self, root: str | None = None) -> list[str]:
+    """Traverses through the graph in DFS order with a visited set.
+    
+    This implementation is recursive and can be converted to an iterative implementation.
+    Only one implementation is necessary, but both are included for instructional purposes.
+    """
+    nodes: list[str] = []
+    visited: set[str] = set()
+    root = root or list(self.nodes.keys())[0]
+    if not self.nodes.get(root):
+      return nodes
+    self._dfs(root, nodes, visited)
+    return nodes
+
+  def iterative_dfs(self, root: str | None = None) -> list[str]:
+    """Traverses through the graph in DFS order with a traversal stack and visited set.
+    
+    This alternative implementation is iterative and is for instructional purposes.
+    In production code, exclude implementation details in the method name (i.e., iterative).
+    """
+    root = root or list(self.nodes.keys())[0]
+    nodes: list[str] = []
+
+    if not self.nodes.get(root):
+      return nodes
+
+    stack: list[str] = [root]
+    visited: set[str] = set()
+
+    while stack:
+      current = stack.pop()
+      self._visit(current, nodes, visited, stack)
+
+    return nodes
+
+  def _visit(self, current_node: str, nodes: list[str], visited: set[str],
+             stack: list[str]):
+    """Visits a node and appends edges to the stack in reverse order.
+    
+    Reversing the append order is unnecessary in producing a valid DFS order.
+    It is only necessary to generate the same output as the recursive DFS for tests.
+    """
+    if current_node in visited:
+      return
+
+    nodes.append(current_node)
+    visited.add(current_node)
+
+    connections = self.connections.get(current_node)
+
+    if not connections:
+      return
+
+    edges = list(connections)
+    edges.reverse()
+
+    for node in edges:
+      stack.append(node.value)
+
+  def _dfs(self, current_node: str, nodes: list[str], visited: set[str]):
+    """Recursive DFS traversal."""
+    if current_node in visited:
+      return
+
+    nodes.append(current_node)
+    visited.add(current_node)
+
+    edges = self.connections.get(current_node)
+
+    if not edges:
+      return
+
+    for node in edges:
+      self._dfs(node.value, nodes, visited)
+
+  def bfs(self, root: str | None = None) -> list[str]:
+    """Traverses through the tree in BFS order with a traversal queue and visited set."""
+    root = root or list(self.nodes.keys())[0]
+    nodes: list[str] = []
+
+    if not self.nodes.get(root):
+      return nodes
+
+    queue: deque[str] = deque()
+    visited: set[str] = set()
+    queue.append(root)
+
+    while queue:
+      current_node = queue.popleft()
+
+      if current_node in visited:
+        continue
+      nodes.append(current_node)
+      visited.add(current_node)
+      edges = self.connections.get(current_node)
+
+      if not edges:
+        continue
+
+      for edge in edges:
+        if edge.value not in visited:
+          queue.append(edge.value)
+
+    return nodes
+
+  def topological_sort(self) -> list[str]:
+    stack: list[str] = []
+    visited: set[str] = set()
+
+    for node in self.nodes:
+      self._topological_sort(node, visited, stack)
+
+    nodes: list[str] = []
+    while stack:
+      nodes.append(stack.pop())
+    return nodes
+
+  def _topological_sort(self, current_node: str, visited: set[str],
+                        stack: list[str]):
+    """"""
+    if current_node in visited:
+      return
+
+    visited.add(current_node)
+    connections = self.connections.get(current_node)
+
+    if not connections:
+      stack.append(current_node)
+      return
+
+    edges = list(connections)
+    edges.reverse()
+
+    for node in edges:
+      if node.value not in visited:
+        self._topological_sort(node.value, visited, stack)
+
+    stack.append(current_node)
+
+  def has_cycle(self) -> bool:
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+    for node in self.nodes:
+      if self._has_cycle(node, visiting, visited):
+        return True
+    return False
+
+  def _has_cycle(self, node: str, visiting: set[str],
+                 visited: set[str]) -> bool | None:
+
+    if node in visited:
+      return False
+
+    if node in visiting:
+      return True
+
+    visiting.add(node)
+    connections = self.connections[node]
+    edges: list[Graph.Node] = []
+
+    if connections:
+      edges = list(connections)
+
+    for edge in edges:
+      if self._has_cycle(edge.value, visiting, visited):
+        return True
+
+    visited.add(node)
+    visiting.remove(node)
+
+    return False
+
 
 class DictGraph:
   nodes: dict[str, DictGraph.Node]
@@ -174,6 +348,7 @@ class DictGraph:
 
 class AdjacencyMatrixGraph:
   """A graph that stores node edges/connections in an adjacency matrix.
+  Superior performance only in dense graphs, where nodes have many edges.
   
   Vertices/Nodes:
   Each node is assigned to an index.
@@ -250,7 +425,7 @@ class AdjacencyMatrixGraph:
 
 class AdjacencyListGraph:
   """A graph that stores node edges/connections in an adjacency list.
-
+  Superior performance in most cases, except dense graphs.
   Vertices/Nodes:
   Each node is assigned to an index.
   nodes: dict[int, Node] = {0: Node(0),

@@ -12,7 +12,7 @@ class TestGraph:
   @pytest.fixture
   def node_labels(self) -> list[str]:
     start = ord("A")
-    end = start + 5
+    end = start + 4
     return [chr(i) for i in range(start, end)]
 
   @pytest.fixture
@@ -33,6 +33,34 @@ class TestGraph:
         if _from == _to:
           continue
         graph.add_edge(_from, _to)
+    return graph
+
+  @pytest.fixture
+  def traversal_graph(self, graph: Graph):
+    graph.add_edge("A", "B")
+    graph.add_edge("A", "C")
+    graph.add_edge("A", "D")
+    graph.add_edge("B", "A")
+    graph.add_edge("B", "D")
+    graph.add_edge("D", "A")
+    graph.add_edge("D", "C")
+    return graph
+
+  @pytest.fixture
+  def topological_graph(self, graph: Graph):
+    graph.add_edge("A", "B")
+    graph.add_edge("A", "C")
+    graph.add_edge("B", "D")
+    graph.add_edge("C", "D")
+    return graph
+
+  @pytest.fixture
+  def cyclic_graph(self, graph: Graph):
+    graph.add_edge("A", "B")
+    graph.add_edge("A", "C")
+    graph.add_edge("B", "D")
+    graph.add_edge("C", "D")
+    graph.add_edge("D", "A")
     return graph
 
   def test_graph_to_str(self, new_graph: Graph):
@@ -115,6 +143,47 @@ class TestGraph:
       new_graph.remove_edge("A", "D")
     with pytest.raises(KeyError):
       new_graph.remove_edge("D", "A")
+
+  def test_graph_dfs(self, traversal_graph: Graph):
+    assert traversal_graph.dfs() == ["A", "B", "D", "C"]
+    assert traversal_graph.dfs("A") == ["A", "B", "D", "C"]
+    assert traversal_graph.dfs("B") == ["B", "A", "C", "D"]
+    assert traversal_graph.dfs("C") == ["C"]
+    assert traversal_graph.dfs("D") == ["D", "A", "B", "C"]
+    assert traversal_graph.dfs("N") == []
+
+  def test_graph_iterative_dfs(self, traversal_graph: Graph):
+    assert traversal_graph.dfs() == traversal_graph.iterative_dfs()
+    assert traversal_graph.dfs("A") == traversal_graph.iterative_dfs("A")
+    assert traversal_graph.dfs("B") == traversal_graph.iterative_dfs("B")
+    assert traversal_graph.dfs("C") == traversal_graph.iterative_dfs("C")
+    assert traversal_graph.dfs("D") == traversal_graph.iterative_dfs("D")
+    assert traversal_graph.dfs("N") == traversal_graph.iterative_dfs("N")
+
+  def test_graph_bfs(self, traversal_graph: Graph):
+    assert traversal_graph.bfs() == ["A", "B", "C", "D"]
+    assert traversal_graph.bfs("A") == ["A", "B", "C", "D"]
+    assert traversal_graph.bfs("B") == ["B", "A", "D", "C"]
+    assert traversal_graph.bfs("C") == ["C"]
+    assert traversal_graph.bfs("D") == ["D", "A", "C", "B"]
+    assert traversal_graph.bfs("N") == []
+
+  def test_graph_topological_sort(self, topological_graph: Graph):
+    assert topological_graph.topological_sort() == ["A", "B", "C", "D"]
+    topological_graph.add_node("E")
+    topological_graph.add_edge("D", "E")
+    assert topological_graph.topological_sort() == ["A", "B", "C", "D", "E"]
+    topological_graph.add_edge("E", "A")
+    assert topological_graph.topological_sort() == ["A", "B", "C", "D", "E"]
+
+  def test_graph_has_cycle(self, topological_graph: Graph, cyclic_graph: Graph):
+    assert cyclic_graph.has_cycle()
+    cyclic_graph.remove_edge("D", "A")
+    assert cyclic_graph.has_cycle() == False
+
+    assert topological_graph.has_cycle() == False
+    topological_graph.add_edge("D", "A")
+    assert topological_graph.has_cycle()
 
 
 if __name__ == "__main__":
