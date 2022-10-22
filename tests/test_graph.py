@@ -1,10 +1,21 @@
 import textwrap
 import pytest
 
-from data_structures.graph import Graph
+from data_structures.graph import Graph as graph
 
 if __name__ == "__main__":
   pytest.main([__file__])
+
+
+class Graph(graph):
+  """Updated graph implementation for testability."""
+
+  class Node(graph.Node):
+    """Updated Node implementation with new hash method."""
+
+    def __hash__(self):
+      """Custom hash method for testability. Not required in main module."""
+      return ord(self.value.lower()) - ord("a")
 
 
 class TestGraph:
@@ -103,8 +114,10 @@ class TestGraph:
   def test_graph_remove_node(self, graph: Graph, node_labels: list[str]):
     for node in node_labels:
       assert graph.has_node(node)
+      assert node in graph.adjacency_list
       graph.remove_node(node)
       assert graph.has_node(node) == False
+      assert node not in graph.adjacency_list
 
   def test_graph_remove_nonexistent_node(self, new_graph: Graph,
                                          node_labels: list[str]):
@@ -121,12 +134,12 @@ class TestGraph:
         graph.add_edge(_from, _to)
         assert graph.has_edge(_from, _to)
 
-  def test_graph_add_nonexistent_node_edge(self, new_graph: Graph):
-    with pytest.raises(Exception):
-      new_graph.add_edge("A", "D")
+  def test_graph_add_nonexistent_node_edge(self, graph: Graph):
+    with pytest.raises(KeyError):
+      graph.add_edge("A", "Z")
 
-    with pytest.raises(Exception):
-      new_graph.add_edge("D", "A")
+    with pytest.raises(KeyError):
+      graph.add_edge("Z", "A")
 
   def test_graph_remove_edge(self, connected_graph: Graph,
                              node_labels: list[str]):
@@ -139,12 +152,10 @@ class TestGraph:
         assert connected_graph.has_edge(_from, _to) == False
 
   def test_graph_remove_nonexistent_edge(self, new_graph: Graph):
-    with pytest.raises(KeyError):
-      new_graph.remove_edge("A", "D")
-    with pytest.raises(KeyError):
-      new_graph.remove_edge("D", "A")
+    new_graph.remove_edge("A", "Z")
+    new_graph.remove_edge("Z", "A")
 
-  def test_graph_dfs(self, traversal_graph: Graph):
+  def test_graph_dfs(self, traversal_graph: Graph, new_graph: Graph):
     assert traversal_graph.dfs() == ["A", "B", "D", "C"]
     assert traversal_graph.dfs("A") == ["A", "B", "D", "C"]
     assert traversal_graph.dfs("B") == ["B", "A", "C", "D"]
@@ -152,7 +163,9 @@ class TestGraph:
     assert traversal_graph.dfs("D") == ["D", "A", "B", "C"]
     assert traversal_graph.dfs("N") == []
 
-  def test_graph_iterative_dfs(self, traversal_graph: Graph):
+    assert new_graph.dfs() == []
+
+  def test_graph_iterative_dfs(self, traversal_graph: Graph, new_graph: Graph):
     assert traversal_graph.dfs() == traversal_graph.iterative_dfs()
     assert traversal_graph.dfs("A") == traversal_graph.iterative_dfs("A")
     assert traversal_graph.dfs("B") == traversal_graph.iterative_dfs("B")
@@ -160,7 +173,9 @@ class TestGraph:
     assert traversal_graph.dfs("D") == traversal_graph.iterative_dfs("D")
     assert traversal_graph.dfs("N") == traversal_graph.iterative_dfs("N")
 
-  def test_graph_bfs(self, traversal_graph: Graph):
+    assert new_graph.iterative_dfs() == []
+
+  def test_graph_bfs(self, traversal_graph: Graph, new_graph: Graph):
     assert traversal_graph.bfs() == ["A", "B", "C", "D"]
     assert traversal_graph.bfs("A") == ["A", "B", "C", "D"]
     assert traversal_graph.bfs("B") == ["B", "A", "D", "C"]
@@ -168,7 +183,10 @@ class TestGraph:
     assert traversal_graph.bfs("D") == ["D", "A", "C", "B"]
     assert traversal_graph.bfs("N") == []
 
-  def test_graph_topological_sort(self, topological_graph: Graph):
+    assert new_graph.bfs() == []
+
+  def test_graph_topological_sort(self, topological_graph: Graph,
+                                  new_graph: Graph):
     assert topological_graph.topological_sort() == ["A", "B", "C", "D"]
     topological_graph.add_node("E")
     topological_graph.add_edge("D", "E")
@@ -176,7 +194,10 @@ class TestGraph:
     topological_graph.add_edge("E", "A")
     assert topological_graph.topological_sort() == ["A", "B", "C", "D", "E"]
 
-  def test_graph_has_cycle(self, topological_graph: Graph, cyclic_graph: Graph):
+    assert new_graph.topological_sort() == []
+
+  def test_graph_has_cycle(self, topological_graph: Graph, cyclic_graph: Graph,
+                           new_graph: Graph):
     assert cyclic_graph.has_cycle()
     cyclic_graph.remove_edge("D", "A")
     assert cyclic_graph.has_cycle() == False
@@ -184,6 +205,8 @@ class TestGraph:
     assert topological_graph.has_cycle() == False
     topological_graph.add_edge("D", "A")
     assert topological_graph.has_cycle()
+
+    assert new_graph.has_cycle() == False
 
 
 if __name__ == "__main__":

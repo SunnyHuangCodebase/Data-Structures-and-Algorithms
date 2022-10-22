@@ -1,15 +1,16 @@
-"""A graph is a network of nodes (vertices) and their connections (edges).
-  A node (vertex) represents an object and may connect to any other node(s).
-  
-  Edges in an undirected graph represent a connections between two nodes (A and B).
-  Edges in a directed graph may connect A to B, but not necessarily B to A.
-  Edges may also carry a weight to quantify the connection.
+"""A graph is a network of nodes (vertices) and connections (edges).
+  A node (vertex) represents an object and may connect to any other node(s) (neighbor(s)).
+  Edges behave differently depending on the graph type:
+    Undirected: Connects two nodes (A and B).
+    Directed: Connects a source (A) to target (B), but not necessarily B to A.
+    Weighted: Connects A and B with a weight, which quantifies the connection.
   
   Example of a social network implemented with a graph:
     Nodes represent accounts
-    Edges represent followers or friends.
-    An undirected graph can indicate friends with an edge. 
-    A directed graph can indicate followers with a directed edge.
+    Edges represent various things depending on the graph type:
+      Undirected: A and B are mutual friends
+      Directed: A is B's follower, but B may not necessarily be A's follower.
+      Weighted: The frequency at which A and B interact with each other. 
 
   This Graph implementation is for instructional purposes.
 """
@@ -19,10 +20,10 @@ from typing import Any
 
 
 class Graph:
-  """Graph implements a graph using a dictionary/hashmap and set implementation.
+  """Graph implements a graph using an dictionary/set adjacency list.
 
-  Inferior Alternatives:
-    An adjacency matrix consumes more memory with no performance gain."""
+    The pros and cons of an adjacency matrix vs adjacency list are discussed later.
+  """
 
   class Node:
     """A Graph.Node"""
@@ -31,198 +32,187 @@ class Graph:
     def __init__(self, value: str):
       self.value = value
 
-    def __str__(self) -> str:
-      return self.value
-
-    def __hash__(self):
-      """This node implementation uses a custom hash for testability."""
-      return ord(self.value.lower()) - ord("a")
-
   nodes: dict[str, Graph.Node]
-  connections: dict[str, set[Graph.Node]]
+  adjacency_list: dict[str, set[Graph.Node]]
 
   def __init__(self):
     self.nodes = {}
-    self.connections = {}
+    self.adjacency_list = {}
 
   def __str__(self) -> str:
     output: list[str] = []
 
-    for node, edges in self.connections.items():
-      output.append(f"{node}: {[edge.value for edge in edges]}")
+    for node, neighbors in self.adjacency_list.items():
+      output.append(f"{node}: {[neighbor.value for neighbor in neighbors]}")
 
     return "\n".join(output)
 
-  def has_node(self, node: str):
+  def _get_node_default(self, name: str | None) -> str | None:
+    """Returns the name of a node if it exists, or None if it doesn't.
+    
+      If node is unspecified, defaults to the name of first node in the graph.
+    """
+    if not name:
+      return self._first_node()
+
+    if not self.has_node(name):
+      return None
+
+    return name
+
+  def _first_node(self) -> str | None:
+    """Returns the name of the first node in the graph, if any. Otherwise returns None."""
+    if not self.nodes:
+      return None
+
+    return next(iter(self.nodes))
+
+  def _get_node_by_name(self, name: str) -> Graph.Node | None:
+    """Return the node with the specified name or None if it doesn't exist."""
+    return self.nodes.get(name)
+
+  def _get_node_edges(self, name: str) -> set[Graph.Node] | None:
+    """Returns the edges of a node, if any. Otherwise, returns None."""
+    return self.adjacency_list.get(name)
+
+  def has_node(self, name: str | None) -> bool:
     """Returns whether a node exists in the graph."""
-    return node in self.nodes
 
-  def add_node(self, label: str):
-    """Adds a node to the graph."""
-    if self.connections.get(label):
-      return
-
-    self.nodes[label] = self.Node(label)
-    self.connections[label] = set()
-
-  def remove_node(self, label: str):
-    """Removes a node from the graph."""
-    node = self.nodes.get(label)
-
-    if not node:
-      return
-
-    del self.nodes[label]
-
-    edges = self.connections.values()
-
-    for edge in edges:
-      try:
-        edge.remove(node)
-      except KeyError:
-        pass
-
-  def has_edge(self, _from: str, _to: str) -> bool:
-    """Returns True if there is a connection between two nodes."""
-    node = self.nodes.get(_to)
-    edges = self.connections.get(_from)
-
-    if not edges or not node:
+    if not self.nodes:
       return False
 
-    return node in edges
+    return name in self.nodes
 
-  def add_edge(self, _from: str, _to: str):
-    """Adds a connection between two nodes."""
+  def add_node(self, name: str):
+    """Adds a new node to the graph."""
 
-    from_node = self.nodes.get(_from)
-    to_node = self.nodes.get(_to)
-
-    if not from_node:
-      raise Exception(f"Node '{_from}' doesn't exist")
-
-    if not to_node:
-      raise Exception(f"Node '{_to}' doesn't exist")
-
-    edges = self.connections[_from]
-    edges.add(to_node)
-
-  def remove_edge(self, _from: str, _to: str):
-    """Removes a connection between two nodes."""
-    edges = self.connections[_from]
-    to_node = self.nodes.get(_to)
-
-    if not edges or not to_node:
+    if self.has_node(name):
       return
 
-    edges.remove(to_node)
+    self.nodes[name] = self.Node(name)
+    self.adjacency_list[name] = set()
+
+  def remove_node(self, node: str):
+    """Removes the node and all references to it from the graph."""
+    if not self.has_node(node):
+      return
+
+    for source in self.adjacency_list:
+      self.remove_edge(source, node)
+
+    del self.nodes[node]
+    del self.adjacency_list[node]
+
+  def has_edge(self, source: str, target: str) -> bool:
+    """Returns True if there is a connection between two nodes."""
+    try:
+      return self.nodes[target] in self.adjacency_list[source]
+    except KeyError:
+      return False
+
+  def add_edge(self, source: str, target: str):
+    """Adds a connection between two nodes."""
+    edges = self.adjacency_list[source]
+    node = self.nodes[target]
+    edges.add(node)
+
+  def remove_edge(self, source: str, target: str):
+    """Removes a connection between two nodes."""
+    try:
+      edges = self.adjacency_list[source]
+      node = self.nodes[target]
+      edges.remove(node)
+    except KeyError:
+      return
 
   def dfs(self, root: str | None = None) -> list[str]:
-    """Traverses through the graph in DFS order with a visited set.
-    
-    This implementation is recursive and can be converted to an iterative implementation.
-    Only one implementation is necessary, but both are included for instructional purposes.
+    """Traverses graph in DFS order with a visited set.
+
+      This implementation is recursive and can be converted to an iterative implementation.
+      Only one implementation is necessary, but both are included for instructional purposes.
     """
     nodes: list[str] = []
-    visited: set[str] = set()
-    root = root or list(self.nodes.keys())[0]
-    if not self.nodes.get(root):
-      return nodes
-    self._dfs(root, nodes, visited)
+
+    if root := self._get_node_default(root):
+      visited: set[str] = set()
+      self._dfs(root, nodes, visited)
+
     return nodes
 
   def iterative_dfs(self, root: str | None = None) -> list[str]:
-    """Traverses through the graph in DFS order with a traversal stack and visited set.
+    """Traverses graph in DFS order with a traversal stack and visited set.
     
-    This alternative implementation is iterative and is for instructional purposes.
-    In production code, exclude implementation details in the method name (i.e., iterative).
+      This alternative implementation is iterative and is for instructional purposes.
+      In production code, exclude implementation details in the method name (i.e., iterative).
     """
-    root = root or list(self.nodes.keys())[0]
     nodes: list[str] = []
 
-    if not self.nodes.get(root):
-      return nodes
+    if root := self._get_node_default(root):
+      stack: list[str] = [root]
+      visited: set[str] = set()
 
-    stack: list[str] = [root]
-    visited: set[str] = set()
-
-    while stack:
-      current = stack.pop()
-      self._visit(current, nodes, visited, stack)
+      while stack:
+        current = stack.pop()
+        self._visit(current, nodes, visited, stack)
 
     return nodes
 
-  def _visit(self, current_node: str, nodes: list[str], visited: set[str],
+  def _visit(self, node: str, nodes: list[str], visited: set[str],
              stack: list[str]):
-    """Visits a node and appends edges to the stack in reverse order.
+    """Visits a node and its neighbors to the stack in reverse order.
     
-    Reversing the append order is unnecessary in producing a valid DFS order.
-    It is only necessary to generate the same output as the recursive DFS for tests.
+      Reversing the append order is unnecessary in producing a valid DFS order.
+      It is only necessary to generate the same output as the recursive DFS for tests.
     """
-    if current_node in visited:
+    if node in visited:
       return
 
-    nodes.append(current_node)
-    visited.add(current_node)
+    nodes.append(node)
+    visited.add(node)
 
-    connections = self.connections.get(current_node)
+    for neighbor in reversed(list(self.adjacency_list.get(node, set()))):
+      if neighbor.value not in visited:
+        stack.append(neighbor.value)
 
-    if not connections:
-      return
-
-    edges = list(connections)
-    edges.reverse()
-
-    for node in edges:
-      stack.append(node.value)
-
-  def _dfs(self, current_node: str, nodes: list[str], visited: set[str]):
+  def _dfs(self, node: str, nodes: list[str], visited: set[str]):
     """Recursive DFS traversal."""
-    if current_node in visited:
+    if node in visited:
       return
 
-    nodes.append(current_node)
-    visited.add(current_node)
+    nodes.append(node)
+    visited.add(node)
 
-    edges = self.connections.get(current_node)
-
-    if not edges:
-      return
-
-    for node in edges:
-      self._dfs(node.value, nodes, visited)
+    for neighbor in self.adjacency_list.get(node, {}):
+      self._dfs(neighbor.value, nodes, visited)
 
   def bfs(self, root: str | None = None) -> list[str]:
-    """Traverses through the tree in BFS order with a traversal queue and visited set."""
-    root = root or list(self.nodes.keys())[0]
+    """Traverses graph in BFS order with a visiting queue and visited set."""
     nodes: list[str] = []
 
-    if not self.nodes.get(root):
-      return nodes
+    if root := self._get_node_default(root):
+      queue: deque[str] = deque((root,))
+      visited: set[str] = set()
 
-    queue: deque[str] = deque()
-    visited: set[str] = set()
-    queue.append(root)
-
-    while queue:
-      current_node = queue.popleft()
-
-      if current_node in visited:
-        continue
-      nodes.append(current_node)
-      visited.add(current_node)
-      edges = self.connections.get(current_node)
-
-      if not edges:
-        continue
-
-      for edge in edges:
-        if edge.value not in visited:
-          queue.append(edge.value)
+      while queue:
+        self._bfs(queue.popleft(), nodes, visited, queue)
 
     return nodes
 
+  def _bfs(self, current_node: str, nodes: list[str], visited: set[str],
+           queue: deque[str]):
+    """Recursive BFS traversal."""
+    if current_node in visited:
+      return
+
+    nodes.append(current_node)
+    visited.add(current_node)
+
+    for node in self.adjacency_list.get(current_node, set()):
+      if node.value not in visited:
+        queue.append(node.value)
+
   def topological_sort(self) -> list[str]:
+    """Returns ordered list where all source nodes precede target nodes in the graph."""
     stack: list[str] = []
     visited: set[str] = set()
 
@@ -230,34 +220,28 @@ class Graph:
       self._topological_sort(node, visited, stack)
 
     nodes: list[str] = []
+
     while stack:
       nodes.append(stack.pop())
+
     return nodes
 
   def _topological_sort(self, current_node: str, visited: set[str],
                         stack: list[str]):
-    """"""
+    """Recursive topological sort method.."""
     if current_node in visited:
       return
 
     visited.add(current_node)
-    connections = self.connections.get(current_node)
 
-    if not connections:
-      stack.append(current_node)
-      return
-
-    edges = list(connections)
-    edges.reverse()
-
-    for node in edges:
+    for node in reversed(list(self.adjacency_list.get(current_node, set()))):
       if node.value not in visited:
         self._topological_sort(node.value, visited, stack)
 
     stack.append(current_node)
 
   def has_cycle(self) -> bool:
-
+    """Returns whether the graph has a cycle."""
     visiting: set[str] = set()
     visited: set[str] = set()
     for node in self.nodes:
@@ -267,21 +251,16 @@ class Graph:
 
   def _has_cycle(self, node: str, visiting: set[str],
                  visited: set[str]) -> bool | None:
+    """Recursive method to check for a cycle in the graph."""
+    if node in visiting:
+      return True
 
     if node in visited:
       return False
 
-    if node in visiting:
-      return True
-
     visiting.add(node)
-    connections = self.connections[node]
-    edges: list[Graph.Node] = []
 
-    if connections:
-      edges = list(connections)
-
-    for edge in edges:
+    for edge in self.adjacency_list.get(node, set()):
       if self._has_cycle(edge.value, visiting, visited):
         return True
 
@@ -292,8 +271,7 @@ class Graph:
 
 
 class DictGraph:
-  nodes: dict[str, DictGraph.Node]
-  connections: dict[str, dict[str, DictGraph.Node]]
+  """A graph implementation using a nested dictionary"""
 
   class Node:
     name: str
@@ -301,29 +279,37 @@ class DictGraph:
     def __init__(self, name: str):
       self.name = name
 
-  def __init__(self):
-    self.connections = {}
+  nodes: dict[str, DictGraph.Node]
+  adjacency_list: dict[str, dict[str, DictGraph.Node]]
 
-  def create_node(self, name: str):
-    """Create a node with name."""
-    return DictGraph.Node(name)
+  def __init__(self):
+    self.adjacency_list = {}
+
+  def has_node(self, name: str | None) -> bool:
+    """Returns whether a node exists in the graph."""
+
+    if not self.nodes:
+      return False
+
+    return name in self.nodes
 
   def add_node(self, name: str):
     """Adds a node to the graph."""
-    if self.connections.get(name):
+    if self.has_node(name):
       return
-    self.nodes[name] = self.create_node(name)
-    self.connections[name] = {}
+
+    self.nodes[name] = self.Node(name)
+    self.adjacency_list[name] = {}
 
   def remove_node(self, name: str):
     """Removes a node from the graph."""
-    if not self.connections.get(name):
+    if not self.adjacency_list.get(name):
       return
 
-    del self.connections[name]
+    del self.adjacency_list[name]
 
-    for node in self.connections:
-      del self.connections[node][name]
+    for node in self.adjacency_list:
+      del self.adjacency_list[node][name]
 
   def add_edge(self, _from: str, _to: str):
     """Adds a connection between two nodes."""
@@ -331,16 +317,16 @@ class DictGraph:
       raise Exception(f"Node {_from} does not exist")
     if not self.nodes.get(_to):
       raise Exception(f"Node {_to} does not exist")
-    self.connections[_from] = {_to: self.nodes[_to]}
+    self.adjacency_list[_from] = {_to: self.nodes[_to]}
 
   def remove_edge(self, _from: str, _to: str):
     """Removes a connection between two nodes."""
-    del self.connections[_from][_to]
+    del self.adjacency_list[_from][_to]
 
   def print_graph(self):
     """Prints the graph"""
     nodes: list[str] = []
-    for node, connections in self.connections.items():
+    for node, connections in self.adjacency_list.items():
       nodes.append(f"{node} connections: {list(connections.keys())}")
 
     print("\n".join(nodes))
