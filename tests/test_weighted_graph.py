@@ -58,6 +58,24 @@ class TestWeightedGraph:
     with pytest.raises(PathNotFoundError):
       weighted_graph.get_shortest_distance("A", "F")
 
+  def test_weighted_graph_get_shortest_path(self,
+                                            weighted_graph: WeightedGraph):
+
+    assert weighted_graph.get_shortest_path("A", "A") == ["A"]
+    assert weighted_graph.get_shortest_path("A", "B") == ["A", "B"]
+    assert weighted_graph.get_shortest_path("B", "A") == ["B", "A"]
+    assert weighted_graph.get_shortest_path("A", "C") == ["A", "C"]
+    assert weighted_graph.get_shortest_path("A", "D") == ["A", "C", "D"]
+    assert weighted_graph.get_shortest_path("A", "E") == ["A", "C", "D", "E"]
+    assert weighted_graph.get_shortest_path("B", "D") == ["B", "D"]
+    assert weighted_graph.get_shortest_path("C", "E") == ["C", "D", "E"]
+
+    with pytest.raises(NonexistentNode):
+      weighted_graph.get_shortest_distance("A", "G")
+
+    with pytest.raises(PathNotFoundError):
+      weighted_graph.get_shortest_distance("A", "F")
+
 
 if __name__ == "__main__":
   pytest.main([__file__])

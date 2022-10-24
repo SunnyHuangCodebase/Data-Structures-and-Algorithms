@@ -105,6 +105,60 @@ class WeightedGraph:
 
     raise PathNotFoundError
 
+  def get_shortest_path(self, source: str, target: str) -> list[str]:
+    """Returns the shortest node path between two nodes.
+
+    Uses Djikstra's Algorithm.
+    """
+    try:
+      source_node = self.nodes[source]
+      self.nodes[target]
+    except KeyError:
+      raise NonexistentNode
+
+    routes: dict[WeightedGraph.Node, float] = {}
+    priority_queue: list[tuple[float, WeightedGraph.Node]] = []
+    visited: set[WeightedGraph.Node] = set()
+
+    for node in self.nodes.values():
+      routes[node] = float("inf")
+
+    previous_nodes: dict[str, str] = {}
+    routes[source_node] = 0
+
+    heapq.heappush(priority_queue, (0, source_node))
+
+    while priority_queue:
+      _, current = heapq.heappop(priority_queue)
+      visited.add(current)
+      for edge in current.get_edges():
+        if edge.target in visited:
+          continue
+        distance = routes[current] + edge.weight
+        if distance < routes[edge.target]:
+          routes[edge.target] = distance
+          previous_nodes[edge.target.value] = current.value
+          heapq.heappush(priority_queue, (distance, edge.target))
+
+    return self._generate_shortest_path(previous_nodes, target)
+
+  def _generate_shortest_path(self, previous_nodes: dict[str, str],
+                              target: str) -> list[str]:
+    """Converts a reverse sequence of nodes into a node path."""
+    path: list[str] = []
+    stack: list[str] = []
+    stack.append(target)
+    previous = previous_nodes.get(target)
+
+    while previous:
+      stack.append(previous)
+      previous = previous_nodes.get(previous)
+
+    while stack:
+      path.append(stack.pop())
+
+    return path
+
 
 class PathNotFoundError(Exception):
   """Path between two graph nodes not found."""
@@ -112,5 +166,3 @@ class PathNotFoundError(Exception):
 
 class NonexistentNode(Exception):
   """Node not found in graph."""
-
-
