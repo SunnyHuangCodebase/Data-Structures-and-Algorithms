@@ -49,7 +49,7 @@ class WeightedGraph:
       self.weight = weight
 
     def __str__(self):
-      return f"{self.source} -{self.weight})-> {self.target}"
+      return f"{self.source} -{self.weight}-> {self.target}"
 
   nodes: dict[str, WeightedGraph.Node]
 
@@ -70,7 +70,10 @@ class WeightedGraph:
   def __str__(self):
     output: list[str] = []
     for node in self.nodes.values():
-      output.append(f"{node} is connected to {node.get_edges()}")
+
+      output.append(
+          f"{node} is connected to {[edge.target for edge in node.get_edges()]}"
+      )
     return "\n".join(output)
 
   def get_shortest_distance(self, source: str, target: str) -> int:
@@ -158,6 +161,75 @@ class WeightedGraph:
       path.append(stack.pop())
 
     return path
+
+  def has_cycle(self) -> bool:
+    visited: set[WeightedGraph.Node] = set()
+
+    for node in self.nodes.values():
+      if node in visited:
+        continue
+
+      if self._has_cycle(node, None, visited):
+        return True
+
+    return False
+
+  def _has_cycle(self, node: WeightedGraph.Node,
+                 previous_node: WeightedGraph.Node | None,
+                 visited: set[WeightedGraph.Node]):
+    """Check if node is part of a cycle. 
+    Uses a recursive DFS algorithm."""
+    if node in visited:
+      return True
+
+    visited.add(node)
+
+    for edge in node.get_edges():
+
+      if edge.target is previous_node:
+        continue
+
+      if self._has_cycle(edge.target, node, visited):
+        return True
+
+    return False
+
+  def minimum_spanning_tree(self,):
+    """Returns a minimum weight, acyclic tree containing all nodes of the minimum weight.
+    
+    Uses Prim's Algorithm
+    """
+    tree = WeightedGraph()
+
+    if not self.nodes:
+      return tree
+
+    node = next(iter(self.nodes.values()))
+    queue: list[tuple[int, WeightedGraph.Node, WeightedGraph.Node | None]] = []
+
+    for edge in node.get_edges():
+      heapq.heappush(queue, (edge.weight, edge.target, node))
+
+    if not queue:
+      return tree
+
+    visited: set[WeightedGraph.Node] = set()
+    tree.add_node(node.value)
+
+    while len(tree.nodes) < len(self.nodes):
+      weight, node, previous = heapq.heappop(queue)
+      visited.add(node)
+      tree.add_node(node.value)
+
+      if previous:
+        tree.add_edge(node.value, previous.value, weight)
+
+      for edge in node.get_edges():
+        if edge.target in visited:
+          continue
+        heapq.heappush(queue, (edge.weight, edge.target, edge.source))
+
+    return tree
 
 
 class PathNotFoundError(Exception):
