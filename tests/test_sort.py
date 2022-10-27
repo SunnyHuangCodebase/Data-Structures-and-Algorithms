@@ -1,6 +1,6 @@
 import pytest
 
-from algorithms.sort import BubbleSort, SelectionSort
+from algorithms.sort import BubbleSort, InsertionSort, MergeSort, SelectionSort
 
 
 class TestSort:
@@ -44,6 +44,38 @@ class TestSort:
   def test_selection_sort_descending(self, numbers: list[int],
                                      descending_order: list[int]):
     sorter = SelectionSort()
+    assert sorter.sort(numbers, descending=True) == descending_order
+    assert sorter.sort([1, 2], descending=True) == [2, 1]
+    assert sorter.sort([1], descending=True) == [1]
+    assert sorter.sort([], descending=True) == []
+
+  def test_insertion_sort_ascending(self, numbers: list[int],
+                                    ascending_order: list[int]):
+    sorter = InsertionSort()
+    assert sorter.sort(numbers) == ascending_order
+    assert sorter.sort([2, 1]) == [1, 2]
+    assert sorter.sort([1]) == [1]
+    assert sorter.sort([]) == []
+
+  def test_insertion_sort_descending(self, numbers: list[int],
+                                     descending_order: list[int]):
+    sorter = InsertionSort()
+    assert sorter.sort(numbers, descending=True) == descending_order
+    assert sorter.sort([1, 2], descending=True) == [2, 1]
+    assert sorter.sort([1], descending=True) == [1]
+    assert sorter.sort([], descending=True) == []
+
+  def test_merge_sort_ascending(self, numbers: list[int],
+                                ascending_order: list[int]):
+    sorter = MergeSort()
+    assert sorter.sort(numbers) == ascending_order
+    assert sorter.sort([2, 1]) == [1, 2]
+    assert sorter.sort([1]) == [1]
+    assert sorter.sort([]) == []
+
+  def test_merge_sort_descending(self, numbers: list[int],
+                                 descending_order: list[int]):
+    sorter = MergeSort()
     assert sorter.sort(numbers, descending=True) == descending_order
     assert sorter.sort([1, 2], descending=True) == [2, 1]
     assert sorter.sort([1], descending=True) == [1]
