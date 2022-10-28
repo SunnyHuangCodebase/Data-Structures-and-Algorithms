@@ -110,7 +110,7 @@ class InsertionSort:
 class MergeSort:
 
   def sort(self, array: list[int], *, descending: bool = False) -> list[int]:
-    """Recursively divides array into two for sorting and merging.
+    """Recursively divides array into two subarrays for sorting and merging.
     
     A divide and conquer algorithm that splits the array into smaller subarrays.
     The subarrays are recursively divided for sorting.
@@ -155,3 +155,93 @@ class MergeSort:
     combined_array.extend(right_array[right_index:])
 
     return combined_array
+
+
+class QuickSort:
+
+  def sort(self, array: list[int], *, descending: bool = False):
+    """Recursively sorts subarrays on either side of a pivot value.
+    
+    Select pivot value from the end of the array.
+    Ascending order: sorts smaller values left, larger values right of pivot.
+    Descending order: sorts larger values left, smaller values right of pivot.
+    Recursively sorts subarrays on either side of the pivot. 
+
+    Time Complexity: O(n * log(n))
+      Best Case: O(n * log(n)) if array is already sorted.
+      Worst Case: O(n^2) if array is sorted in reverse order
+    
+    Space Complexity:
+      Best Case: O(log(n)) if array is already sorted.
+      Worst Case: O(n) if array is sorted in reverse order.
+    """
+
+    self._sort(array, 0, len(array) - 1, descending)
+
+    return array
+
+  def _sort(self, array: list[int], start: int, end: int, descending: bool):
+    """Recursively partitions left and right subarrays."""
+    if end - start < 1:
+      return
+
+    swap_index = self.partition(array, start, end, descending)
+    self._sort(array, start, swap_index - 1, descending)
+    self._sort(array, swap_index + 1, end, descending)
+
+  def partition(self, array: list[int], start: int, end: int, descending: bool):
+    """Partitions array with preceding values to left of pivot, proceeding values to right."""
+    pivot = array[end]
+    swap_index = start
+    for i in range(start, end):
+      if not descending and array[i] < pivot or\
+      descending and array[i] > pivot:
+
+        self.swap(array, i, swap_index)
+        swap_index += 1
+
+    self.swap(array, swap_index, end)
+    return swap_index
+
+  def swap(self, array: list[int], index1: int, index2: int):
+    """Swaps values at two specified array indices."""
+    array[index1], array[index2] = array[index2], array[index1]
+
+
+class CountingSort:
+
+  def sort(self,
+           array: list[int],
+           max_number: int,
+           *,
+           descending: bool = False):
+    """Tracks an array using a count array with number as indicies and frequencies as values.
+    
+    Create a count array of size k, where k is the max number in the number array.
+    Set all values of the count array to 0.
+    For each number (n) in number array, increment count_array[n] by 1.
+    Once all values are counted, rewrite the array using the count_array indices and values.
+    
+    Time Complexity: (O(n)) even if the array is already sorted.
+    """
+    count_array = [0 for _ in range(max_number + 1)]
+
+    for value in array:
+      count_array[value] += 1
+
+    self._fill_array(array, count_array, descending)
+
+    return array
+
+  def _fill_array(self, array: list[int], count_array: list[int],
+                  descending: bool):
+    """Fills in the number array using value-frequency pairs in the count array."""
+    i = 0
+    array_length = len(array) - 1
+    for value, count in enumerate(count_array):
+      for _ in range(count):
+        if not descending:
+          array[i] = value
+        else:
+          array[array_length - i] = value
+        i += 1
