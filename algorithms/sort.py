@@ -1,3 +1,6 @@
+import heapq
+
+
 class BubbleSort:
 
   def sort(self, array: list[int], *, descending: bool = False):
@@ -168,12 +171,12 @@ class QuickSort:
     Recursively sorts subarrays on either side of the pivot. 
 
     Time Complexity: O(n * log(n))
-      Best Case: O(n * log(n)) if array is already sorted.
-      Worst Case: O(n^2) if array is sorted in reverse order
+      Best Case: O(n * log(n)) if the pivot is the median value.
+      Worst Case: O(n^2) if the pivot is always the min or max array value.
     
     Space Complexity:
-      Best Case: O(log(n)) if array is already sorted.
-      Worst Case: O(n) if array is sorted in reverse order.
+      Best Case: O(log(n)) if the pivot is the median value.
+      Worst Case: O(n) if the pivot is always the min or max array value.
     """
 
     self._sort(array, 0, len(array) - 1, descending)
@@ -245,3 +248,45 @@ class CountingSort:
         else:
           array[array_length - i] = value
         i += 1
+
+
+class BucketSort:
+
+  def sort(self,
+           array: list[int],
+           bucket_count: int,
+           *,
+           descending: bool = False):
+    """Sorts array values into smaller buckets for more efficient ordering.
+    
+      Time Complexity: O(n log(n))
+        Best Case: O(n) if the bucket is sorted/uses an efficient sort algorithm.
+        Worst Case: O(n^2) if the bucket is unsorted/uses a costly sort algorithm.
+    
+      Space Complexity: O(n)
+    """
+
+    i = 0
+    array_len = len(array) - 1
+    for bucket in self._create_buckets(array, bucket_count):
+      heapq.heapify(bucket)
+      while bucket:
+        index = i if not descending else array_len - i
+        array[index] = heapq.heappop(bucket)
+        i += 1
+    return array
+
+  def _create_buckets(self, array: list[int], k: int) -> list[list[int]]:
+    """Creates buckets with each value added to bucket number value // k."""
+    buckets: list[list[int]] = [[] for _ in range(k)]
+
+    for num in array:
+      try:
+        buckets[num // k].append(num)
+      except IndexError as e:
+        e.add_note(
+            "Increment bucket count, k, so that k^2 > max(array) or use another algorithm."
+        )
+        raise
+
+    return buckets
