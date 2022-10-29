@@ -94,8 +94,7 @@ class WeightedGraph:
     while heap:
 
       weight, node = heapq.heappop(heap)
-
-      if node.value is target:
+      if node.value == target:
         return weight
 
       if node in visited:

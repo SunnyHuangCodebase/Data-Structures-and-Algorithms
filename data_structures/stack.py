@@ -23,10 +23,10 @@ class Stack(Generic[T]):
   The array in this implementation is a list of fixed size.
 
   Inferior Alternatives:
-  A regular list is dynamic and "resizes" itself when the number of values exceeds capacity. 
-  This costly "resize" operation actually copies values to a new list, taking O(n) time.
+    A regular list is dynamic and "resizes" itself when the number of values exceeds capacity. 
+    This costly "resize" operation actually copies values to a new list, taking O(n) time.
 
-  A circular linked list costs more memory with no additional performance gains.
+    A circular linked list costs more memory with no additional performance gains.
   """
   _data: list[T | None]
   _index: int

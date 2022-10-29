@@ -46,10 +46,10 @@ class LinkedListQueue(Generic[T]):
   Enqueue, dequeue, and peek operations take O(1) time when implemented as a linked list.
   
   Inferior Alternatives:
-  A doubly linked list costs more memory with no performance benefit.
-  Queue operations also never need access a node's previous node.
+    A doubly linked list costs more memory with no performance benefit.
+    Queue operations also never need access a node's previous node.
 
-  A circular linked list adds unnecessary complexity with no performance benefit.
+    A circular linked list adds unnecessary complexity with no performance benefit.
   """
   linked_list: LinkedList[T]
   size: int
