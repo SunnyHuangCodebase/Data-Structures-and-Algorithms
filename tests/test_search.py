@@ -17,32 +17,79 @@ class TestSearch:
     search = Search()
     for i in range(10):
       assert search.linear_search(sorted_array, i) == i
+    assert search.linear_search(sorted_array, 10) == -1
+    assert search.linear_search([], 1) == -1
+    assert search.linear_search([1], 1) == 0
+    assert search.linear_search([1], 2) == -1
+    assert search.linear_search([1, 2], 1) == 0
+    assert search.linear_search([1, 2], 2) == 1
+    assert search.linear_search([1, 3], 2) == -1
+    assert search.linear_search([2, 1], 1) == 1
 
     assert search.linear_search(unsorted_array, 2) == 0
     assert search.linear_search(unsorted_array, 6) == 2
     assert search.linear_search(unsorted_array, 8) == 9
     assert search.linear_search(unsorted_array, 10) == -1
 
-    assert search.linear_search(sorted_array, 10) == -1
-    assert search.linear_search([1, 2], 1) == 0
-    assert search.linear_search([2, 1], 1) == 1
-    assert search.linear_search([], 1) == -1
-
   def test_iterative_binary_search(self, sorted_array: list[int]):
     search = Search()
     for i in range(10):
       assert search.iterative_binary_search(sorted_array, i) == i
     assert search.iterative_binary_search(sorted_array, 10) == -1
-    assert search.iterative_binary_search([1, 2], 1) == 0
     assert search.iterative_binary_search([], 1) == -1
+    assert search.iterative_binary_search([1], 1) == 0
+    assert search.iterative_binary_search([1], 2) == -1
+    assert search.iterative_binary_search([1, 2], 1) == 0
+    assert search.iterative_binary_search([1, 2], 2) == 1
+    assert search.iterative_binary_search([1, 3], 2) == -1
 
   def test_recursive_binary_search(self, sorted_array: list[int]):
     search = Search()
     for i in range(10):
       assert search.recursive_binary_search(sorted_array, i) == i
     assert search.recursive_binary_search(sorted_array, 10) == -1
-    assert search.recursive_binary_search([1, 2], 1) == 0
     assert search.recursive_binary_search([], 1) == -1
+    assert search.recursive_binary_search([1], 1) == 0
+    assert search.recursive_binary_search([1], 2) == -1
+    assert search.recursive_binary_search([1, 2], 1) == 0
+    assert search.recursive_binary_search([1, 2], 2) == 1
+    assert search.recursive_binary_search([1, 3], 2) == -1
+
+  def test_ternary_search(self, sorted_array: list[int]):
+    search = Search()
+    for i in range(10):
+      assert search.ternary_search(sorted_array, i) == i
+    assert search.ternary_search(sorted_array, 10) == -1
+    assert search.ternary_search([], 1) == -1
+    assert search.ternary_search([1], 1) == 0
+    assert search.ternary_search([1], 2) == -1
+    assert search.ternary_search([1, 2], 1) == 0
+    assert search.ternary_search([1, 2], 2) == 1
+    assert search.ternary_search([1, 3], 2) == -1
+
+  def test_jump_search(self, sorted_array: list[int]):
+    search = Search()
+    for i in range(10):
+      assert search.jump_search(sorted_array, i) == i
+    assert search.jump_search(sorted_array, 10) == -1
+    assert search.jump_search([], 1) == -1
+    assert search.jump_search([1], 1) == 0
+    assert search.jump_search([1], 2) == -1
+    assert search.jump_search([1, 2], 1) == 0
+    assert search.jump_search([1, 2], 2) == 1
+    assert search.jump_search([1, 3], 2) == -1
+
+  def test_exponential_search(self, sorted_array: list[int]):
+    search = Search()
+    for i in range(10):
+      assert search.exponential_search(sorted_array, i) == i
+    assert search.exponential_search(sorted_array, 10) == -1
+    assert search.exponential_search([], 1) == -1
+    assert search.exponential_search([1], 1) == 0
+    assert search.exponential_search([1], 2) == -1
+    assert search.exponential_search([1, 2], 1) == 0
+    assert search.exponential_search([1, 2], 2) == 1
+    assert search.exponential_search([1, 3], 2) == -1
 
 
 if __name__ == "__main__":
